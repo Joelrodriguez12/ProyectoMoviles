@@ -6,6 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'register_model.dart';
 export 'register_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+
 
 class RegisterWidget extends StatefulWidget {
   const RegisterWidget({Key? key}) : super(key: key);
@@ -28,6 +32,18 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     _model.textController1 ??= TextEditingController();
     _model.textController2 ??= TextEditingController();
     _model.textController3 ??= TextEditingController();
+  }
+
+  void registrar() async
+  {
+    final docUser= FirebaseFirestore.instance.collection('users').doc();
+    final json={
+      'correo': _model.textController2.text,
+      'nombre': _model.textController1.text,
+      'password': _model.textController3.text
+    };
+    await docUser.set(json);
+    context.pushNamed('tareas');
   }
 
   @override
@@ -277,7 +293,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         ),
                         FFButtonWidget(
                           onPressed: () {
-                            print('Button pressed ...');
+                            registrar();
                           },
                           text: 'Crear Cuenta',
                           options: FFButtonOptions(
