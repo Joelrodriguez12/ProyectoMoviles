@@ -6,6 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'login_model.dart';
 export 'login_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class LoginWidget extends StatefulWidget {
   const LoginWidget({Key? key}) : super(key: key);
@@ -17,6 +21,8 @@ class LoginWidget extends StatefulWidget {
 class _LoginWidgetState extends State<LoginWidget> {
   late LoginModel _model;
 
+  String? userId; // Variable para almacenar el ID del documento
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _unfocusNode = FocusNode();
 
@@ -27,6 +33,35 @@ class _LoginWidgetState extends State<LoginWidget> {
 
     _model.correologinController ??= TextEditingController();
     _model.passloginController ??= TextEditingController();
+  }
+
+
+  Future<void> login() async {
+    final String email = _model.correologinController.text;
+    final String password = _model.passloginController.text;
+
+    try {
+      final QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('correo', isEqualTo: email)
+          .where('password', isEqualTo: password)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Usuario autenticado
+        userId = snapshot.docs[0].id; // Guardar el ID del documento
+        context.pushNamed('perfil');
+        print('Inicio de sesión exitoso');
+      } else  {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Credenciales incorrectas')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error en el inicio de sesion')),
+      );
+    }
   }
 
   @override
@@ -100,18 +135,18 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     labelStyle: FlutterFlowTheme.of(context)
                                         .labelMedium
                                         .override(
-                                          fontFamily: 'Readex Pro',
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                        ),
+                                      fontFamily: 'Readex Pro',
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                    ),
                                     hintText: 'Ingresa tu correo',
                                     hintStyle: FlutterFlowTheme.of(context)
                                         .labelMedium
                                         .override(
-                                          fontFamily: 'Readex Pro',
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                        ),
+                                      fontFamily: 'Readex Pro',
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                    ),
                                     enabledBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
                                         color: FlutterFlowTheme.of(context)
@@ -131,7 +166,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     errorBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
                                         color:
-                                            FlutterFlowTheme.of(context).error,
+                                        FlutterFlowTheme.of(context).error,
                                         width: 2.0,
                                       ),
                                       borderRadius: BorderRadius.circular(8.0),
@@ -139,7 +174,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     focusedErrorBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
                                         color:
-                                            FlutterFlowTheme.of(context).error,
+                                        FlutterFlowTheme.of(context).error,
                                         width: 2.0,
                                       ),
                                       borderRadius: BorderRadius.circular(8.0),
@@ -148,7 +183,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     fillColor: Color(0xFF00597B),
                                   ),
                                   style:
-                                      FlutterFlowTheme.of(context).bodyMedium,
+                                  FlutterFlowTheme.of(context).bodyMedium,
                                   validator: _model
                                       .correologinControllerValidator
                                       .asValidator(context),
@@ -173,18 +208,18 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       labelStyle: FlutterFlowTheme.of(context)
                                           .labelMedium
                                           .override(
-                                            fontFamily: 'Readex Pro',
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                          ),
+                                        fontFamily: 'Readex Pro',
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                      ),
                                       hintText: 'Ingresa tu contraseña',
                                       hintStyle: FlutterFlowTheme.of(context)
                                           .labelMedium
                                           .override(
-                                            fontFamily: 'Readex Pro',
-                                            color: FlutterFlowTheme.of(context)
-                                                .primaryBackground,
-                                          ),
+                                        fontFamily: 'Readex Pro',
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                      ),
                                       enabledBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
                                           color: FlutterFlowTheme.of(context)
@@ -192,7 +227,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(8.0),
+                                        BorderRadius.circular(8.0),
                                       ),
                                       focusedBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
@@ -201,7 +236,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(8.0),
+                                        BorderRadius.circular(8.0),
                                       ),
                                       errorBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
@@ -210,7 +245,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(8.0),
+                                        BorderRadius.circular(8.0),
                                       ),
                                       focusedErrorBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
@@ -219,7 +254,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                           width: 2.0,
                                         ),
                                         borderRadius:
-                                            BorderRadius.circular(8.0),
+                                        BorderRadius.circular(8.0),
                                       ),
                                       filled: true,
                                       fillColor: Color(0xFF00597B),
@@ -227,10 +262,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
-                                          fontFamily: 'Readex Pro',
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                        ),
+                                      fontFamily: 'Readex Pro',
+                                      color: FlutterFlowTheme.of(context)
+                                          .primaryBackground,
+                                    ),
                                     validator: _model
                                         .passloginControllerValidator
                                         .asValidator(context),
@@ -243,7 +278,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   0.0, 24.0, 0.0, 0.0),
                               child: FFButtonWidget(
                                 onPressed: () async {
-                                  context.pushNamed('tareas');
+                                  login();
                                 },
                                 text: 'Login',
                                 options: FFButtonOptions(
@@ -257,10 +292,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   textStyle: FlutterFlowTheme.of(context)
                                       .titleSmall
                                       .override(
-                                        fontFamily: 'Readex Pro',
-                                        color: Colors.white,
-                                        fontSize: 14.0,
-                                      ),
+                                    fontFamily: 'Readex Pro',
+                                    color: Colors.white,
+                                    fontSize: 14.0,
+                                  ),
                                   elevation: 3.0,
                                   borderSide: BorderSide(
                                     color: Colors.transparent,
@@ -281,7 +316,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                                   Text(
                                     'No tienes cuenta?, ',
                                     style:
-                                        FlutterFlowTheme.of(context).titleSmall,
+                                    FlutterFlowTheme.of(context).titleSmall,
                                   ),
                                   FFButtonWidget(
                                     onPressed: () async {
@@ -293,15 +328,15 @@ class _LoginWidgetState extends State<LoginWidget> {
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           24.0, 0.0, 24.0, 0.0),
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
+                                      EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
                                       color: Color(0xFF001219),
                                       textStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
                                           .override(
-                                            fontFamily: 'Readex Pro',
-                                            color: Colors.white,
-                                          ),
+                                        fontFamily: 'Readex Pro',
+                                        color: Colors.white,
+                                      ),
                                       elevation: 3.0,
                                       borderSide: BorderSide(
                                         color: Colors.transparent,

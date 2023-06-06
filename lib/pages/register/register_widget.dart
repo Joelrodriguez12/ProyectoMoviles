@@ -8,6 +8,7 @@ import 'register_model.dart';
 export 'register_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 
@@ -21,6 +22,7 @@ class RegisterWidget extends StatefulWidget {
 class _RegisterWidgetState extends State<RegisterWidget> {
   late RegisterModel _model;
 
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _unfocusNode = FocusNode();
 
@@ -44,6 +46,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     };
     await docUser.set(json);
     context.pushNamed('tareas');
+
   }
 
   @override

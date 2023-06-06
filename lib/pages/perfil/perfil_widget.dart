@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'perfil_model.dart';
 export 'perfil_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PerfilWidget extends StatefulWidget {
   const PerfilWidget({Key? key}) : super(key: key);
@@ -16,9 +17,47 @@ class PerfilWidget extends StatefulWidget {
 
 class _PerfilWidgetState extends State<PerfilWidget> {
   late PerfilModel _model;
-
+  String userId = '7hFLHjx605pWWbYSLYRM';
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _unfocusNode = FocusNode();
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserData() {
+    return FirebaseFirestore.instance.collection('users').doc(userId).get();
+  }
+
+  Future<void> updateUserProfile() async {
+    final userData = {
+      'nombre': _model.textController1.text,
+      'correo': _model.textController2.text,
+    };
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .update(userData);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Información actualizada con éxito')),
+      );
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al actualizar la información')),
+      );
+    }
+  }
+
+  Future<void> deleteProfile() async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).delete();
+      Navigator.pop(context);
+      context.push('home_page');// Navegar a la página de inicio (home_page)
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al eliminar el perfil')),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -27,6 +66,18 @@ class _PerfilWidgetState extends State<PerfilWidget> {
 
     _model.textController1 ??= TextEditingController(text: 'Nom');
     _model.textController2 ??= TextEditingController(text: 'Correo usuario');
+
+    getUserData().then((snapshot) {
+      if (snapshot.exists) {
+        final userData = snapshot.data();
+        if (userData != null) {
+          setState(() {
+            _model.textController1.text = userData['nombre'] ?? '';
+            _model.textController2.text = userData['correo'] ?? '';
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -48,12 +99,12 @@ class _PerfilWidgetState extends State<PerfilWidget> {
           backgroundColor: Color(0xFF001219),
           automaticallyImplyLeading: false,
           title: Text(
-            'Bienvenido,  ',
+            'Bienvenido',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  fontFamily: 'Outfit',
-                  color: Colors.white,
-                  fontSize: 22.0,
-                ),
+              fontFamily: 'Outfit',
+              color: Colors.white,
+              fontSize: 22.0,
+            ),
           ),
           actions: [],
           centerTitle: false,
@@ -76,20 +127,6 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                         decoration: BoxDecoration(
                           color: Color(0xFF001219),
                         ),
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 12.0, 0.0, 0.0),
-                          child: Text(
-                            'Nom usuario',
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Readex Pro',
-                                  color: FlutterFlowTheme.of(context)
-                                      .primaryBackground,
-                                ),
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -100,7 +137,7 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                         width: MediaQuery.of(context).size.width * 1.0,
                         decoration: BoxDecoration(
                           color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
+                          FlutterFlowTheme.of(context).secondaryBackground,
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
@@ -125,9 +162,9 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                                 decoration: InputDecoration(
                                   labelText: 'Nombre',
                                   labelStyle:
-                                      FlutterFlowTheme.of(context).labelMedium,
+                                  FlutterFlowTheme.of(context).labelMedium,
                                   hintStyle:
-                                      FlutterFlowTheme.of(context).labelMedium,
+                                  FlutterFlowTheme.of(context).labelMedium,
                                   enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context)
@@ -173,9 +210,9 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                                 decoration: InputDecoration(
                                   labelText: 'Correo',
                                   labelStyle:
-                                      FlutterFlowTheme.of(context).labelMedium,
+                                  FlutterFlowTheme.of(context).labelMedium,
                                   hintStyle:
-                                      FlutterFlowTheme.of(context).labelMedium,
+                                  FlutterFlowTheme.of(context).labelMedium,
                                   enabledBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context)
@@ -187,7 +224,7 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color:
-                                          FlutterFlowTheme.of(context).primary,
+                                      FlutterFlowTheme.of(context).primary,
                                       width: 2.0,
                                     ),
                                     borderRadius: BorderRadius.circular(8.0),
@@ -221,7 +258,7 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                                       0.0, 13.0, 0.0, 0.0),
                                   child: FFButtonWidget(
                                     onPressed: () {
-                                      print('Button pressed ...');
+                                      updateUserProfile();
                                     },
                                     text: 'Guardar cambios',
                                     options: FFButtonOptions(
@@ -230,16 +267,55 @@ class _PerfilWidgetState extends State<PerfilWidget> {
                                       padding: EdgeInsetsDirectional.fromSTEB(
                                           0.0, 0.0, 0.0, 0.0),
                                       iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0.0, 0.0, 0.0, 0.0),
+                                      EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
                                       color: Color(0xFF19BFFF),
                                       textStyle: FlutterFlowTheme.of(context)
                                           .titleSmall
                                           .override(
-                                            fontFamily: 'Readex Pro',
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                        fontFamily: 'Readex Pro',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      elevation: 3.0,
+                                      borderSide: BorderSide(
+                                        color: Colors.transparent,
+                                        width: 1.0,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      0.0, 24.0, 0.0, 0.0),
+                                  child: FFButtonWidget(
+                                    onPressed: () {
+                                      deleteProfile();
+                                    },
+                                    text: 'Eliminar perfil',
+                                    options: FFButtonOptions(
+                                      width: 200.0,
+                                      height: 50.0,
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
+                                      iconPadding:
+                                      EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 0.0),
+                                      color: Colors.red,
+                                      textStyle: FlutterFlowTheme.of(context)
+                                          .titleSmall
+                                          .override(
+                                        fontFamily: 'Readex Pro',
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                       elevation: 3.0,
                                       borderSide: BorderSide(
                                         color: Colors.transparent,

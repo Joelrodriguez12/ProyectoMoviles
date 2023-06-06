@@ -15,13 +15,13 @@ import 'flutter_flow/nav/nav.dart';
 import 'firebase_options.dart';
 import 'index.dart';
 
-void main() async {
+Future main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-  await FlutterFlowTheme.initialize();
-
-  runApp(MyApp());
-
+  runApp( MyApp());
 }
 
 class MyApp extends StatefulWidget {
